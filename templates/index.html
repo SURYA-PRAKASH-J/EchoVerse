@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>EchoVerse · HF Edition</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ev-primary: #5b7cfa;
+      --ev-muted: #64748b;
+      --ev-bg: #0b1021;
+    }
+    html, body { height: 100%; }
+    body {
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+      background: radial-gradient(90rem 60rem at -10% -20%, #1b2350 0%, #0b1021 40%),
+                  radial-gradient(60rem 60rem at 110% -10%, #2b356e 0%, rgba(11,16,33,0) 60%),
+                  var(--ev-bg);
+      color: #e2e8f0;
+    }
+    .navbar {
+      background: rgba(10, 15, 35, 0.6) !important;
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .brand-mark { font-weight: 700; letter-spacing: 0.3px; }
+    .brand-badge { font-size: .75rem; background: rgba(91,124,250,.15); color: #c7d2fe; padding: .2rem .45rem; border-radius: .4rem; margin-left: .5rem; border: 1px solid rgba(91,124,250,.35); }
+    .hero { text-align: center; margin-top: 2.25rem; margin-bottom: 1.25rem; }
+    .hero h1 { font-weight: 700; letter-spacing: .2px; }
+    .hero p { color: var(--ev-muted); margin-top: .5rem; }
+
+    .ev-card { background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02)); border: 1px solid rgba(255,255,255,0.08); border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    .ev-card .card-header { background: transparent; border-bottom: 1px solid rgba(255,255,255,0.06); }
+
+    .form-label { color: #cbd5e1; font-weight: 500; }
+    .form-control, .form-select, .form-control:focus, .form-select:focus { background-color: #0f172a; border-color: rgba(255,255,255,0.12); color: #e2e8f0; }
+    .form-text { color: #94a3b8; }
+    .btn-primary { background: linear-gradient(135deg, #6b8bff, #4e6bff); border: 0; box-shadow: 0 8px 24px rgba(93,124,250,.3); }
+    .btn-primary:hover { filter: brightness(1.06); }
+
+    .narration-card { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.08); }
+    .meta { color: #a3b1cc; font-size: .875rem; }
+    .badge-tone { background: rgba(91,124,250,.12); color: #c7d2fe; border: 1px solid rgba(91,124,250,.35); }
+    .muted-scroll { max-height: 180px; overflow-y: auto; border-radius: 10px; background: rgba(15,23,42,.6); border: 1px dashed rgba(148,163,184,.25); padding: .75rem 1rem; color: #cbd5e1; }
+    .footer { color: #94a3b8; font-size: .875rem; }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-dark">
+    <div class="container">
+      <span class="navbar-brand mb-0 h1 brand-mark">EchoVerse <span class="brand-badge">HF Edition</span></span>
+    </div>
+  </nav>
+
+  <main class="container">
+    <section class="hero">
+      <h1>Turn text into elegant audio narratives</h1>
+      <p>Create polished voiceovers from pasted text or .txt uploads. Choose a tone and voice, then generate an MP3.</p>
+    </section>
+
+    {% with msgs = get_flashed_messages(with_categories=true) %}
+      {% if msgs %}
+        <div class="container" style="max-width: 860px;">
+          {% for cat, msg in msgs %}
+            <div class="alert alert-{{ cat }} ev-card" role="alert">{{ msg }}</div>
+          {% endfor %}
+        </div>
+      {% endif %}
+    {% endwith %}
+
+    <section class="row justify-content-center mb-4">
+      <div class="col-12 col-lg-10">
+        <div class="card ev-card">
+          <div class="card-header d-flex align-items-center justify-content-between">
+            <div>
+              <span class="fw-semibold">Input</span>
+              <span class="text-secondary ms-2" style="font-size:.9rem">Paste text or upload a .txt file</span>
+            </div>
+          </div>
+          <div class="card-body">
+            <form method="post" enctype="multipart/form-data" id="ev-form">
+              <div class="row g-3">
+                <div class="col-12 col-md-6">
+                  <label class="form-label" for="file_input">Upload .txt file</label>
+                  <input type="file" class="form-control" id="file_input" name="file_input" accept=".txt" />
+                  <div class="form-text">Optional. If provided, it takes precedence over the text area.</div>
+                </div>
+                <div class="col-12 col-md-3">
+                  <label class="form-label" for="tone">Tone</label>
+                  <select class="form-select" id="tone" name="tone">
+                    {% for t in tones %}
+                      <option value="{{ t }}">{{ t }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12 col-md-3">
+                  <label class="form-label" for="voice">Voice</label>
+                  <select class="form-select" id="voice" name="voice">
+                    {% for v in voices %}
+                      <option value="{{ v }}">{{ v }}</option>
+                    {% endfor %}
+                  </select>
+                </div>
+                <div class="col-12">
+                  <label class="form-label" for="text_input">Or paste text</label>
+                  <textarea class="form-control" id="text_input" name="text_input" rows="6" placeholder="Paste or type your content here..."></textarea>
+                  <div class="d-flex justify-content-between">
+                    <small class="form-text">Tip: Keep it concise for best results.</small>
+                    <small class="form-text"><span id="charCount">0</span> characters</small>
+                  </div>
+                </div>
+              </div>
+              <div class="d-flex align-items-center gap-2 mt-3">
+                <button class="btn btn-primary" type="submit" id="submitBtn">
+                  <span class="spinner-border spinner-border-sm me-2 d-none" role="status" aria-hidden="true" id="btnSpinner"></span>
+                  Generate Audiobook
+                </button>
+                <span class="meta">Average generation time depends on input length.</span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {% if narrations %}
+      <section class="row justify-content-center mb-5">
+        <div class="col-12 col-lg-10">
+          <div class="d-flex align-items-center justify-content-between mb-2">
+            <h2 class="h4 mb-0">Past Narrations</h2>
+            <span class="meta">{{ narrations|length }} item(s)</span>
+          </div>
+
+          {% for n in narrations %}
+            <div class="card narration-card mb-3">
+              <div class="card-body">
+                <div class="d-flex align-items-center justify-content-between flex-wrap gap-2">
+                  <div class="d-flex align-items-center gap-2">
+                    <span class="badge rounded-pill badge-tone">{{ n.tone }}</span>
+                    <span class="meta">Voice: {{ n.voice }}</span>
+                    <span class="meta">ID: {{ n.id }}</span>
+                  </div>
+                  <div>
+                    <a href="{{ url_for('download_audio', nid=n.id) }}" class="btn btn-sm btn-outline-light">Download MP3</a>
+                  </div>
+                </div>
+                <div class="row g-3 mt-2">
+                  <div class="col-12 col-lg-6">
+                    <div class="meta mb-1">Original</div>
+                    <div class="muted-scroll">{{ n.orig }}</div>
+                  </div>
+                  <div class="col-12 col-lg-6">
+                    <div class="meta mb-1">Rewritten</div>
+                    <div class="muted-scroll">{{ n.rew }}</div>
+                  </div>
+                </div>
+                <div class="mt-3">
+                  <audio class="w-100" controls src="{{ url_for('serve_audio', nid=n.id) }}"></audio>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      </section>
+    {% endif %}
+  </main>
+
+  <footer class="container pb-4">
+    <div class="d-flex justify-content-between align-items-center footer">
+      <span>EchoVerse</span>
+      <span>Hugging Face Granite + IBM Text-to-Speech</span>
+    </div>
+  </footer>
+
+  <script>
+    const textArea = document.getElementById('text_input');
+    const charCount = document.getElementById('charCount');
+    const form = document.getElementById('ev-form');
+    const submitBtn = document.getElementById('submitBtn');
+    const btnSpinner = document.getElementById('btnSpinner');
+    const fileInput = document.getElementById('file_input');
+
+    if (textArea) {
+      textArea.addEventListener('input', () => {
+        charCount.textContent = (textArea.value || '').length;
+      });
+    }
+
+    form?.addEventListener('submit', () => {
+      submitBtn.setAttribute('disabled', 'disabled');
+      btnSpinner.classList.remove('d-none');
+    });
+
+    // If a file is selected, grey out the textarea to hint precedence
+    fileInput?.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files.length > 0) {
+        textArea.setAttribute('disabled', 'disabled');
+        textArea.classList.add('opacity-75');
+      } else {
+        textArea.removeAttribute('disabled');
+        textArea.classList.remove('opacity-75');
+      }
+    });
+  </script>
+</body>
+</html>

@@ -1,4 +1,8 @@
-streamlit
-ibm-watson-machine-learning
-python-dotenv
-requests
+# EchoVerse Flask App Requirements (Hybrid: HF Granite + IBM TTS)
+flask==3.0.0
+python-dotenv==1.0.1
+requests>=2.32.4,<3.0.0
+
+# Optional: production servers
+# gunicorn==21.2.0  # Linux/macOS
+# waitress==3.0.0   # Cross-platform/Windows
