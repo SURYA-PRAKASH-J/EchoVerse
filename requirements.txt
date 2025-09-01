@@ -1,0 +1,4 @@
+streamlit
+ibm-watson-machine-learning
+python-dotenv
+requests
